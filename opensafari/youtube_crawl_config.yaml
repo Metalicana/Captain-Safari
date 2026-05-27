@@ -1,0 +1,91 @@
+# YouTube link gathering configuration for OpenSafari candidate discovery.
+#
+# This stage only collects public video metadata and watch URLs. It does not
+# download video bytes or bypass platform access controls.
+
+output_csv: youtube_candidates_audit.csv
+
+search:
+  # Queries are intentionally biased toward aerial, drone, and long camera
+  # motion footage that the OpenSafari pipeline can later verify geometrically.
+  queries:
+    - cinematic fpv mountain flight 4k
+    - fpv drone mountain surfing 4k
+    - cinematic drone city flyover 4k
+    - cinematic drone coastline flyover 4k
+    - drone forest river flight 4k
+    - cinematic desert drone flight 4k
+    - winter fpv drone flight 4k
+    - tropical island drone flyover 4k
+  max_results_per_query: 50
+  backend: auto  # auto | yt-dlp | html | api
+  api_key_env: YOUTUBE_API_KEY
+  language: en-US
+  region: US
+  order: relevance
+  safe_search: moderate
+  video_embeddable: "true"
+  enrich_videos: true
+  sleep_seconds: 1.5
+  timeout_seconds: 20
+
+filters:
+  min_duration_seconds: 60
+  max_duration_seconds: 900
+  require_any_keywords:
+    - drone
+    - aerial
+    - fpv
+    - flyover
+    - cinematic
+    - landscape
+  reject_any_keywords:
+    - tutorial
+    - review
+    - unboxing
+    - gameplay
+    - simulator
+    - compilation
+    - reaction
+    - vlog
+    - news
+    - music video
+    - shorts
+    - short
+    - youtube short
+    - process explained
+    - explained
+    - tutorial
+    - how to
+    - review
+    - best drone
+    - dji avata
+    - dji fpv
+    - trailer
+    - promo
+    - commercial
+    - stock footage
+    - copyright free
+    - no copyright
+    - free stock
+    - royalty free
+    - free drone
+    - narrated
+    - shark
+    - stadium
+    - ballpark
+    - clubhouse
+    - asmr
+    - relaxing
+    - relaxing music
+    - calming music
+    - relaxation
+    - ambient
+    - ambience
+    - peaceful
+    - piano music
+    - healing music
+
+resume:
+  skip_existing_video_ids: true
+  seen_csvs: []

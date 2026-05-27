@@ -71,6 +71,42 @@ unzip models.zip
 ```
 ## 3. Dataset Curation
 
+## 3.0. YouTube Candidate Link Gathering
+
+Before running the full download and preprocessing stage, you can gather public YouTube candidate links with the metadata-only crawler:
+
+```bash
+python 0.youtube_link_crawler.py \
+  --config youtube_crawl_config.yaml \
+  --output-csv youtube_candidates.csv
+```
+
+For a quick smoke test:
+
+```bash
+python 0.youtube_link_crawler.py \
+  --config youtube_crawl_config.yaml \
+  --query "drone aerial landscape 4k" \
+  --max-results-per-query 10 \
+  --dry-run
+```
+
+To use the official YouTube Data API instead of the default local search backend, enable YouTube Data API v3 in Google Cloud, create an API key, and keep it in your shell environment:
+
+```bash
+export YOUTUBE_API_KEY="YOUR_KEY_HERE"
+
+python 0.youtube_link_crawler.py \
+  --config youtube_crawl_config.yaml \
+  --backend api \
+  --output-csv youtube_candidates.csv
+```
+
+The official API uses quota units. A default project quota is 10,000 units/day, and `search.list` costs 100 units per request, with up to 50 results per request.
+The crawler also enriches API search results with `videos.list` so duration and view-count filters work on API crawls.
+
+The crawler is intentionally conservative: it collects watch URLs and public metadata, deduplicates video IDs, rate-limits queries, and applies keyword/duration filters biased toward aerial/drone footage. The output includes `url`, `mp4`, `title`, `channel`, `duration_seconds`, `view_count`, `query`, `matched_keywords`, and `rejected_reason` columns. By default, rejected rows are kept for auditability; pass `--accepted-only` to write only candidates that pass the filters. Use `--append` to add new rows to an existing crawl CSV without duplicating IDs already in that file, or pass `--seen-csv previous.csv` to skip IDs from older crawls while writing to a new file. The `mp4` column is an alias for compatibility with existing OpenSafari CSV conventions; YouTube URLs still require a compliant downloader/conversion step before `1.download_preprocess.py` can fetch actual video bytes.
+
 ## 3.1. Download and Preprocessing Pipeline
 
 We provide a comprehensive, multi-stage pipeline script ([`1.download_preprocess.py`](1.download_preprocess.py)) to curate high-quality, motion-rich video from raw sources, as described in **Section 4.1** of our paper. The pipeline is designed to be **robust**, **resumable**, and **parallelized** across multiple GPUs.
